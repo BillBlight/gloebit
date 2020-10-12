@@ -730,8 +730,8 @@ namespace Gloebit.GloebitMoneyModule
                 m_newLandPassFlow = true;
                 m_newHTTPFlow = true;
                 m_log.DebugFormat("[GLOEBITMONEYMODULE] This module only compatible with versions 0.9.2 and above");
-                 m_log.DebugFormat("[GLOEBITMONEYMODULE] Using new HTTP Flow, set by config");
-                 m_log.DebugFormat("[GLOEBITMONEYMODULE] Using new LandPass Flow, set by config");
+                 m_log.DebugFormat("[GLOEBITMONEYMODULE] Using new HTTP Flow");
+                 m_log.DebugFormat("[GLOEBITMONEYMODULE] Using new LandPass");
             // Removing more of the autodection code
             // In case version is unknown or changed by user allow override via config
             //if (m_forceNewHTTPFlow == true) {
