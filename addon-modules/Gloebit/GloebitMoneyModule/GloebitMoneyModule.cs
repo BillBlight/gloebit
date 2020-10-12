@@ -704,7 +704,7 @@ namespace Gloebit.GloebitMoneyModule
             int vn2 = -9999;
             int vn3 = -9999;
             int vn4 = -9999;
-            string detectedOSVersion = "unknown";
+            //string detectedOSVersion = "unknown"; //removed
             m_opensimVersion = OpenSim.VersionInfo.Version;
             m_opensimVersionNumber = OpenSim.VersionInfo.VersionNumber;
             char[] delimiterChars = { '.' };
@@ -729,15 +729,19 @@ namespace Gloebit.GloebitMoneyModule
             // new land pass flow >= 0.9.1; 0.9.0 releae; 
                 m_newLandPassFlow = true;
                 m_newHTTPFlow = true;
+                m_log.DebugFormat("[GLOEBITMONEYMODULE] This module only compatible with versions 0.9.2 and above");
+                 m_log.DebugFormat("[GLOEBITMONEYMODULE] Using new HTTP Flow, set by config");
+                 m_log.DebugFormat("[GLOEBITMONEYMODULE] Using new LandPass Flow, set by config");
+            // Removing more of the autodection code
             // In case version is unknown or changed by user allow override via config
-            if (m_forceNewHTTPFlow == true) {
-                m_log.DebugFormat("[GLOEBITMONEYMODULE] Using new HTTP Flow, set by config");
-                m_newHTTPFlow = true;
-            }
-            if (m_forceNewLandPassFlow == true) {
-                m_log.DebugFormat("[GLOEBITMONEYMODULE] Using new LandPass Flow, set by config");
-                m_newLandPassFlow = true;
-            }			
+            //if (m_forceNewHTTPFlow == true) {
+            //    m_log.DebugFormat("[GLOEBITMONEYMODULE] Using new HTTP Flow, set by config");
+            //    m_newHTTPFlow = true;
+            //}
+            //if (m_forceNewLandPassFlow == true) {
+            //    m_log.DebugFormat("[GLOEBITMONEYMODULE] Using new LandPass Flow, set by config");
+            //    m_newLandPassFlow = true;
+            //}			
 
             // Provide detailed feedback on which version is detected, for debugging and information
             //m_log.DebugFormat("[GLOEBITMONEYMODULE] OpenSim version {0} present, detected: {1} Using New LandPass Flow: {2} Using New HTTP Flow: {3}", m_opensimVersionNumber.ToString(), detectedOSVersion.ToString(), m_newLandPassFlow.ToString(), m_newHTTPFlow.ToString());

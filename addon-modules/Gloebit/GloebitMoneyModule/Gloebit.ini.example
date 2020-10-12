@@ -6,7 +6,9 @@
     ;; Requires that "economymodule = Gloebit" is set in [Economy] or [Startup] section of opensim.ini
     ;; If set to false, can be enabled for individual regions - see GLBEnabledOnlyInRegions below
     Enabled = false
-
+    ;; The following options are from the stock Gloebit source, to override the "automatic" settings, this option has been removed in this version, but including for completeness
+    ;GLBNewLandPassFlow = true
+    ;GLBNewHTTPFlow = true
     ;# {GLBEnabledOnlyInRegions} {Enabled:false} {Enable Gloebit Money Module in specific regions by region UUID (space delimited list)?} {*} ""
     ;; If Enabled is false above, you can enable for individual regions controlled by this OpenSim process.
     ;; Set this variable to a whitespace delimited list of region UUIDs
