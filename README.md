@@ -2,7 +2,7 @@
 This is the same module that you get from Gloebit's website or github with the exception
 of the fact I have removed the OpenSimulator version detection.
 This could be problematic.
-As a result this version ONLY works with 0.9.2 DEV MASTER as of 09/21/2020
+As a result this version ONLY works with [0.9.2 DEV MASTER](http://opensimulator.org/viewgit/?a=shortlog&p=opensim) as of 09/21/2020
 Also have made changes to the prebuild so it builds against .NET 4.8.
 Which means you need [.NET 4.8](https://dotnet.microsoft.com/download/dotnet-framework/net48) or [MONO 6.10](https://www.mono-project.com/download/stable/) or later versions.
 
