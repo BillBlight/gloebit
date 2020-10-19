@@ -152,8 +152,8 @@ namespace Gloebit.GloebitMoneyModule
         private bool m_showNewSessionPurchaseIM = false;
         private bool m_showNewSessionAuthIM = true;
         private bool m_showWelcomeMessage = true;
-        private bool m_forceNewLandPassFlow = true;
-        private bool m_forceNewHTTPFlow = true; 
+        private bool m_forceNewLandPassFlow = false;
+        private bool m_forceNewHTTPFlow = false;
         
         // Populated from grid info
         private string m_gridnick = "unknown_grid";
@@ -205,8 +205,8 @@ namespace Gloebit.GloebitMoneyModule
         // Some internal storage to only retrieve info once
         private string m_opensimVersion = String.Empty;
         private string m_opensimVersionNumber = String.Empty;
-        private bool m_newLandPassFlow = true;
-        private bool m_newHTTPFlow = true;
+        private bool m_newLandPassFlow = false;
+        private bool m_newHTTPFlow = false;
 
 
         #region IRegionModuleBase Interface
@@ -437,8 +437,8 @@ namespace Gloebit.GloebitMoneyModule
                 m_log.InfoFormat("[GLOEBITMONEYMODULE] [Gloebit] is configured with the following settings for messaging users connecting to a new session{0}", nsms_msg);
                 // If version cannot be detected override workflow selection via config
                 // Currently not documented because last resort if all version checking fails
-                m_forceNewLandPassFlow = config.GetBoolean("GLBNewLandPassFlow", true);
-                m_forceNewHTTPFlow = config.GetBoolean("GLBNewHTTPFlow", true);
+                m_forceNewLandPassFlow = config.GetBoolean("GLBNewLandPassFlow", false);
+                m_forceNewHTTPFlow = config.GetBoolean("GLBNewHTTPFlow", false);
                 // Are we using custom db connection info
                 m_dbProvider = config.GetString("GLBSpecificStorageProvider");
                 m_dbConnectionString = config.GetString("GLBSpecificConnectionString");
@@ -704,7 +704,7 @@ namespace Gloebit.GloebitMoneyModule
             int vn2 = -9999;
             int vn3 = -9999;
             int vn4 = -9999;
-            //string detectedOSVersion = "unknown"; //removed
+            string detectedOSVersion = "unknown";
             m_opensimVersion = OpenSim.VersionInfo.Version;
             m_opensimVersionNumber = OpenSim.VersionInfo.VersionNumber;
             char[] delimiterChars = { '.' };
@@ -727,24 +727,56 @@ namespace Gloebit.GloebitMoneyModule
             /*** Version Tests ***/
             // changes to httpserver which require different workflows >= 0.9.2.0
             // new land pass flow >= 0.9.1; 0.9.0 releae; 
+
+            if ((vn1 > 0) || (vn2 > 9) || (vn2 == 9 && vn3 >= 2)) {
+                // Test for version 0.9.2.0 and beyond which contains changes to httpserver and thus needs different workflows also
+                detectedOSVersion = "=>0.9.2";
                 m_newLandPassFlow = true;
                 m_newHTTPFlow = true;
-                m_log.DebugFormat("[GLOEBITMONEYMODULE] This module only compatible with versions 0.9.2 and above");
-                 m_log.DebugFormat("[GLOEBITMONEYMODULE] Using new HTTP Flow");
-                 m_log.DebugFormat("[GLOEBITMONEYMODULE] Using new LandPass");
-            // Removing more of the autodection code
+            } else if ((vn1 == 0) && (vn2 == 9) && (vn3 > 0)) {
+                // 0.9.1 and beyond are the new land pass flow.
+                // Note, there are some early versions of 0.9.1 before any release candidate which do not have the new
+                // flow, but we can't easily determine those and no one should be running those in production.
+                detectedOSVersion = "=>0.9.1";
+                m_newLandPassFlow = true;
+            } else if (vn1 == 0 && vn2 == 9 && vn3 == 0) {
+                // 0.9.0-release pulled in 0.9.1 changes and is new flow, but rest of 0.9.0 is not.
+                // assume dev on 0.9.0.1, 0.9.0.2 will be new flow
+                if (vn4 > 0) {
+                    // 0.9.0.1, 0.9.0.2, etc.
+                    detectedOSVersion = "=>0.9.0.1";
+                    m_newLandPassFlow = true;
+                } else {
+                    // Need to pull version flavour and check it.
+                    // TODO: may need to split on spaces or hyphens and then pull last field because flavour is not friggin public
+                    char[] dChars = { '-', ' ' };
+                    string[] versionParts = m_opensimVersion.Split(dChars, System.StringSplitOptions.RemoveEmptyEntries);
+                    string flavour = versionParts[versionParts.Length - 1];     // TODO: do we every have to worry about this being length 0?
+                    if (flavour == OpenSim.VersionInfo.Flavour.Release.ToString()) {
+                        // 0.9.0 release
+                        detectedOSVersion = "=0.9.0";
+                        m_newLandPassFlow = true;
+                    }
+                }
+                // TODO: Unclear if post-fixes is a necessary flavour check yet.
+            } else {
+                // If all else fails version is unknown
+                detectedOSVersion = "unknown or earlier than 0.9.0 release";
+                m_log.DebugFormat("[GLOEBITMONEYMODULE] Could not confirm recent OpenSim version.  Module may not function! Use config overrides if necessary.\n\tIf >= 0.9.0 release: set GLBNewLandPassFlow to True.\n\tIf >= 0.9.2: set GLBNewHTTPFlow to True");
+            }
+
             // In case version is unknown or changed by user allow override via config
-            //if (m_forceNewHTTPFlow == true) {
-            //    m_log.DebugFormat("[GLOEBITMONEYMODULE] Using new HTTP Flow, set by config");
-            //    m_newHTTPFlow = true;
-            //}
-            //if (m_forceNewLandPassFlow == true) {
-            //    m_log.DebugFormat("[GLOEBITMONEYMODULE] Using new LandPass Flow, set by config");
-            //    m_newLandPassFlow = true;
-            //}			
+            if (m_forceNewHTTPFlow == true) {
+                m_log.DebugFormat("[GLOEBITMONEYMODULE] Using new HTTP Flow, set by config");
+                m_newHTTPFlow = true;
+            }
+            if (m_forceNewLandPassFlow == true) {
+                m_log.DebugFormat("[GLOEBITMONEYMODULE] Using new LandPass Flow, set by config");
+                m_newLandPassFlow = true;
+            }			
 
             // Provide detailed feedback on which version is detected, for debugging and information
-            //m_log.DebugFormat("[GLOEBITMONEYMODULE] OpenSim version {0} present, detected: {1} Using New LandPass Flow: {2} Using New HTTP Flow: {3}", m_opensimVersionNumber.ToString(), detectedOSVersion.ToString(), m_newLandPassFlow.ToString(), m_newHTTPFlow.ToString());
+            m_log.DebugFormat("[GLOEBITMONEYMODULE] OpenSim version {0} present, detected: {1} Using New LandPass Flow: {2} Using New HTTP Flow: {3}", m_opensimVersionNumber.ToString(), detectedOSVersion.ToString(), m_newLandPassFlow.ToString(), m_newHTTPFlow.ToString());
         }
         
         #endregion // ISharedRegionModule Interface
